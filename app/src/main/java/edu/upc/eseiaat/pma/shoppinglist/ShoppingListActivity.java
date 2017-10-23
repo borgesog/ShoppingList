@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -16,6 +18,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,6 +26,8 @@ import java.util.ArrayList;
 
 public class ShoppingListActivity extends AppCompatActivity {
     private static final String FILENAME = "shopping_list.txt";
+    private static final int MAX_BYTES = 8000;
+
 
     private ArrayList<ShoppingItem> itemList;
     private ShoppingListAdapter adapter;
@@ -46,7 +51,7 @@ public class ShoppingListActivity extends AppCompatActivity {
             for (int i=0; 1<itemList.size(); i++){
                 ShoppingItem it = itemList.get(i);
 
-                String line = String.format("%s; %b\n",it.getText(); it.isChecked());
+                String line = String.format("%s; %b\n",it.getText(), it.isChecked());
                 fos.write(line.getBytes());
 
             }
@@ -61,7 +66,32 @@ public class ShoppingListActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.cannot_write, Toast.LENGTH_SHORT).show();
         }
     }
+    private void readItemList(){
+        itemList = new ArrayList<>();
+        try {
 
+            FileInputStream fis= openFileInput(FILENAME);
+            byte[] buffer= new byte[MAX_BYTES];
+            int nread= fis.read(buffer);
+            String content= new String(buffer, 0, nread);
+            String[] lines = content.split("\n");
+            for (String line : lines) {
+                String[] parts = line.split(";");
+                itemList.add(new ShoppingItem(parts[0], parts[1].equals("true")));
+
+            }
+
+            fis.close();
+
+        } catch (FileNotFoundException e) {
+            Log.i("pauek", "readItemList: FileNotFoundException");
+
+        } catch (IOException e) {
+            Log.e("pauek", "ReadItemList: IO exception");
+            Toast.makeText(this, R.string.cannot_read, Toast.LENGTH_SHORT).show();
+        }
+
+    }
     @Override
     protected void onStop() {
         super.onStop();
@@ -77,11 +107,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         btn_add=(Button) findViewById(R.id.btn_add);
         edit_item=(EditText) findViewById(R.id.editItem);
 
-        itemList= new ArrayList<>();
-        itemList.add(new ShoppingItem("Patatas", true));
-        itemList.add(new ShoppingItem("Papel de water", true));
-        itemList.add(new ShoppingItem("Zanahorias"));
-        itemList.add(new ShoppingItem("Copas danone"));
+        readItemList();
 
         adapter=new ShoppingListAdapter(
                 this,
@@ -154,5 +180,11 @@ public class ShoppingListActivity extends AppCompatActivity {
             edit_item.setText("");
         }
         list.smoothScrollToPosition(itemList.size()-1);
+    }
+    public boolean onCreateOptionsMenu (Menu menu){
+        MenuInflater inflater= getMenuInflater();
+        inflater.inflate(R.menu.options, menu);
+        return true;
+
     }
 }

@@ -4,4 +4,6 @@
     <string name="remove">Remove</string>
     <string name="confirm_message">\"Are you sure you want to remove \'%1$s\'?\"</string>
     <string name="cannot_write">Couldn\'t write list</string>
+    <string name="cannot_read">Couldn\'t read list</string>
+    <string name="Clear_Checked">Clear checked items</string>
 </resources>
